@@ -130,7 +130,7 @@ struct AddPadding
 
   static constexpr size_t value = HasFFT && HasControlOut    ? 2
                                   : HasFFT && !HasControlOut ? 1
-                                  : !HasFFT && HasControlOut ? 3
+//                                  : !HasFFT && HasControlOut ? 3 //this has to differentiate loudness to all other nonfft in cases
                                                              : 0;
 
 

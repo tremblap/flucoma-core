@@ -11,12 +11,12 @@ under the European Union’s Horizon 2020 research and innovation programme
 #pragma once
 
 #include "../common/AudioClient.hpp"
+#include "../common/BufferedProcess.hpp"
 #include "../common/FluidBaseClient.hpp"
-#include "../common/FluidSource.hpp"
+#include "../common/FluidNRTClientWrapper.hpp"
 #include "../common/ParameterConstraints.hpp"
 #include "../common/ParameterSet.hpp"
 #include "../common/ParameterTypes.hpp"
-// #include "../../algorithms/public/RunningStats.hpp"
 #include "../../data/TensorTypes.hpp"
 #include "../../algorithms/util/PartialTracking.hpp"
 
@@ -30,11 +30,9 @@ using HostVector = FluidTensorView<T, 1>;
 enum VoiceAllocatorParamIndex {
   kNVoices,
   kPrioritisedVoices,
-  //kStealMethod,
   kBirthLowThreshold,
   kBirthHighTreshold,
   kMinTrackLen,
-  //kTrackMethod,
   kTrackMagRange,
   kTrackFreqRange,
   kTrackProb
@@ -43,11 +41,9 @@ enum VoiceAllocatorParamIndex {
 constexpr auto VoiceAllocatorParams = defineParameters(
     LongParamRuntimeMax<Primary>( "numVoices", "Number of Voices", 1, Min(1)),
     EnumParam("prioritisedVoices", "Prioritised Voice Quality", 0, "Lowest Frequency", "Loudest Magnitude"),
-    //EnumParam("stealMethod", "Voice Stealing Method", 0, "No Stealing", "Oldest", "Quietest"),
     FloatParam("birthLowThreshold", "Track Birth Low Frequency Threshold", -24, Min(-144), Max(0)),
     FloatParam("birthHighThreshold", "Track Birth High Frequency Threshold", -60, Min(-144), Max(0)),
     LongParam("minTrackLen", "Minimum Track Length", 1, Min(1)),
-    //EnumParam("trackMethod", "Tracking Method", 0, "Greedy", "Hungarian"), //changing this to hungarian currently spikes the output like crazy for a moment
     FloatParam("trackMagRange", "Tracking Magnitude Range (dB)", 15., Min(1.), Max(200.)),
     FloatParam("trackFreqRange", "Tracking Frequency Range (Hz)", 50., Min(1.), Max(10000.)),
     FloatParam("trackProb", "Tracking Matching Probability", 0.5, Min(0.0), Max(1.0))
@@ -105,6 +101,10 @@ public:
       mActiveVoiceData.resize(nVoices);
       for (VoicePeak each : mActiveVoiceData) { each = { 0, 0, 0 }; }
   }
+    
+    void reset(FluidContext& c) {
+        init(get<kNVoices>());
+    }
 
   template <typename T>
   void process(std::vector<HostVector<T>>& input,
@@ -237,7 +237,6 @@ public:
   index latency() const { return 0; }
 
 private:
-  //  algorithm::RunningStats mAlgorithm;
     rt::queue<index>                           mFreeVoices;
     rt::deque<index>                           mActiveVoices;
     vector<VoicePeak>                           mActiveVoiceData;
@@ -252,6 +251,20 @@ private:
 
 using VoiceAllocatorClient =
     ClientWrapper<voiceallocator::VoiceAllocatorClient>;
+
+auto constexpr NRTVoiceAllocatorParams =
+    makeNRTParams<voiceallocator::VoiceAllocatorClient>(
+        InputBufferParam("freqIn", "Peak Frequencies Buffer"),
+        InputBufferParam("magIn", "Peak Magnitudes Buffer"),
+        BufferParam("freqOut", "Voice Frequencies Buffer"),
+        BufferParam("magOut", "Voice Magnitudes Buffer"),
+        BufferParam("voiceState", "Voice State"));
+
+using NRTVoiceAllocator = NRTStreamAdaptor<voiceallocator::VoiceAllocatorClient,
+                                           decltype(NRTVoiceAllocatorParams),
+                                           NRTVoiceAllocatorParams, 2, 3>;
+
+using NRTThreadedVoiceAllocator = NRTThreadingAdaptor<NRTVoiceAllocator>;
 
 } // namespace client
 } // namespace fluid
