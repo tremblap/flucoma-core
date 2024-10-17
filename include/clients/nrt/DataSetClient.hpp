@@ -351,6 +351,7 @@ private:
 using DataSetClientRef = SharedClientRef<dataset::DataSetClient>;
 using InputDataSetClientRef = SharedClientRef<const dataset::DataSetClient>;
 
+
 using NRTThreadedDataSetClient =
     NRTThreadingAdaptor<typename DataSetClientRef::SharedType>;
 

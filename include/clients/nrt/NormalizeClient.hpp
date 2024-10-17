@@ -13,6 +13,7 @@ under the European Union’s Horizon 2020 research and innovation programme
 #include "DataSetClient.hpp"
 #include "NRTClient.hpp"
 #include "algorithms/public/Normalization.hpp"
+#include <variant>
 
 namespace fluid {
 namespace client {
@@ -60,37 +61,44 @@ public:
     return {};
   }
 
-  MessageResult<void> fit(InputDataSetClientRef datasetClient)
+  // MessageResult<void> fit(InputDataSetClientRef datasetClient)
+  MessageResult<void> fit(std::variant<InputDataSetClientRef, InputDataSeriesClientRef> dsClient)
   {
-    auto weakPtr = datasetClient.get();
-    if (auto datasetClientPtr = weakPtr.lock())
+    // auto weakPtr = datasetClient.get();
+    // if (auto datasetClientPtr = weakPtr.lock())
+    // {
+    //   auto dataset = datasetClientPtr->getDataSet();
+    //   if (dataset.size() == 0) return Error(EmptyDataSet);
+    //   mAlgorithm.init(get<kMin>(), get<kMax>(), dataset.getData());
+    // }
+    // else
+    // {
+    //   return Error(NoDataSet);
+    // }
+    if (dsClient.index() == 0) // if is dataset
     {
-      auto dataset = datasetClientPtr->getDataSet();
-      if (dataset.size() == 0) return Error(EmptyDataSet);
-      mAlgorithm.init(get<kMin>(), get<kMax>(), dataset.getData());
-    }
-    else
-    {
-      return Error(NoDataSet);
-    }
+InputDataSetClientRef caca = std::get<InputDataSetClientRef>(dsClient);
+    } else { // else is dataseries
+InputDataSeriesClientRef caca = std::get<InputDataSeriesClientRef>(dsClient);
+    };
     return {};
   }
 
-  MessageResult<void> fit2(InputDataSeriesClientRef dataSeriesClient)
-  {
-    auto weakPtr = dataSeriesClient.get();
-    if (auto dataSeriesClientPtr = weakPtr.lock())
-    {
-      auto dataSeries = dataSeriesClientPtr->getDataSeries();
-      if (dataSeries.size() == 0) return Error(EmptyDataSeries);
-      mAlgorithm.init(get<kMin>(), get<kMax>(), dataSeries);
-    }
-    else
-    {
-      return Error(NoDataSeries);
-    }
-    return {};
-  }
+  // MessageResult<void> fit2(InputDataSeriesClientRef dataSeriesClient)
+  // {
+  //   auto weakPtr = dataSeriesClient.get();
+  //   if (auto dataSeriesClientPtr = weakPtr.lock())
+  //   {
+  //     auto dataSeries = dataSeriesClientPtr->getDataSeries();
+  //     if (dataSeries.size() == 0) return Error(EmptyDataSeries);
+  //     mAlgorithm.init(get<kMin>(), get<kMax>(), dataSeries);
+  //   }
+  //   else
+  //   {
+  //     return Error(NoDataSeries);
+  //   }
+  //   return {};
+  // }
 
   MessageResult<void> transform(InputDataSetClientRef sourceClient,
                                 DataSetClientRef destClient)
@@ -127,7 +135,7 @@ public:
   {
     return defineMessages(
         makeMessage("fit", &NormalizeClient::fit),
-        makeMessage("fit2", &NormalizeClient::fit2),
+        // makeMessage("fit2", &NormalizeClient::fit2),
         makeMessage("fitTransform", &NormalizeClient::fitTransform),
         makeMessage("transform", &NormalizeClient::transform),
         makeMessage("transformPoint", &NormalizeClient::transformPoint),
