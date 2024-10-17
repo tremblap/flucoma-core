@@ -75,6 +75,23 @@ public:
     }
     return {};
   }
+
+  MessageResult<void> fit2(InputDataSeriesClientRef dataSeriesClient)
+  {
+    auto weakPtr = dataSeriesClient.get();
+    if (auto dataSeriesClientPtr = weakPtr.lock())
+    {
+      auto dataSeries = dataSeriesClientPtr->getDataSeries();
+      if (dataSeries.size() == 0) return Error(EmptyDataSeries);
+      mAlgorithm.init(get<kMin>(), get<kMax>(), dataSeries);
+    }
+    else
+    {
+      return Error(NoDataSeries);
+    }
+    return {};
+  }
+
   MessageResult<void> transform(InputDataSetClientRef sourceClient,
                                 DataSetClientRef destClient)
   {
@@ -110,6 +127,7 @@ public:
   {
     return defineMessages(
         makeMessage("fit", &NormalizeClient::fit),
+        makeMessage("fit2", &NormalizeClient::fit2),
         makeMessage("fitTransform", &NormalizeClient::fitTransform),
         makeMessage("transform", &NormalizeClient::transform),
         makeMessage("transformPoint", &NormalizeClient::transformPoint),

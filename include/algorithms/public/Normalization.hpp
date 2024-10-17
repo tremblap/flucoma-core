@@ -13,6 +13,7 @@ under the European Union’s Horizon 2020 research and innovation programme
 #include "../util/ScalerUtils.hpp"
 #include "../util/FluidEigenMappings.hpp"
 #include "../../data/TensorTypes.hpp"
+#include "../../data/FluidDataSeries.hpp"
 #include <Eigen/Core>
 #include <cassert>
 #include <cmath>
@@ -41,6 +42,26 @@ public:
     handleZerosInScale(mDataRange);
     mInitialized = true;
   }
+
+    void init(double min, double max, FluidDataSeries<std::string, double, 1> in)
+    {
+      using namespace Eigen;
+      using namespace _impl;
+      mMin = min;
+      mMax = max;
+      mRange = mMax - mMin;
+      handleZerosInScale(mRange);
+        ArrayXXd input;
+//        while (index r = 0; r < in.size(); r++)
+//        {
+//            in.getDataSet(r,asFluid(input));
+//            mDataMin = input.colwise().minCoeff();
+//            mDataMax = input.colwise().maxCoeff();
+//            mDataRange = mDataMax - mDataMin;
+//        }
+      handleZerosInScale(mDataRange);
+      mInitialized = true;
+    }
 
   void init(double min, double max, RealVectorView dataMin,
             RealVectorView dataMax)
