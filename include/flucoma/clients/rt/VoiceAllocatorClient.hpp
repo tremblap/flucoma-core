@@ -39,15 +39,20 @@ enum VoiceAllocatorParamIndex {
 };
 
 constexpr auto VoiceAllocatorParams = defineParameters(
-    LongParamRuntimeMax<Primary>( "numVoices", "Number of Voices", 1, Min(1)),
-    EnumParam("prioritisedVoices", "Prioritised Voice Quality", 0, "Lowest Frequency", "Loudest Magnitude"),
-    FloatParam("birthLowThreshold", "Track Birth Low Frequency Threshold", -24, Min(-144), Max(0)),
-    FloatParam("birthHighThreshold", "Track Birth High Frequency Threshold", -60, Min(-144), Max(0)),
+    LongParamRuntimeMax<Primary>("numVoices", "Number of Voices", 1, Min(1)),
+    EnumParam("prioritisedVoices", "Prioritised Voice Quality", 0,
+              "Lowest Frequency", "Loudest Magnitude"),
+    FloatParam("birthLowThreshold", "Track Birth Low Frequency Threshold", -24,
+               Min(-144), Max(0)),
+    FloatParam("birthHighThreshold", "Track Birth High Frequency Threshold",
+               -60, Min(-144), Max(0)),
     LongParam("minTrackLen", "Minimum Track Length", 1, Min(1)),
-    FloatParam("trackMagRange", "Tracking Magnitude Range (dB)", 15., Min(1.), Max(200.)),
-    FloatParam("trackFreqRange", "Tracking Frequency Range (Hz)", 50., Min(1.), Max(10000.)),
-    FloatParam("trackProb", "Tracking Matching Probability", 0.5, Min(0.0), Max(1.0))
-    );
+    FloatParam("trackMagRange", "Tracking Magnitude Range (dB)", 15., Min(1.),
+               Max(200.)),
+    FloatParam("trackFreqRange", "Tracking Frequency Range (Hz)", 50., Min(1.),
+               Max(10000.)),
+    FloatParam("trackProb", "Tracking Matching Probability", 0.5, Min(0.0),
+               Max(1.0)));
 
 class VoiceAllocatorClient : public FluidBaseClient,
                              public ControlIn,
@@ -225,9 +230,11 @@ public:
 
   MessageResult<void> clear()
   {
-    init(get<kNVoices>());
+    mVoiceAllocator.reset();
     return {};
   }
+
+  void reset(FluidContext&) { clear(); }
 
   static auto getMessageDescriptors()
   {
