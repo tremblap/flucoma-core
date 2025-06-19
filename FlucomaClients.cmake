@@ -118,6 +118,7 @@ add_client(BufThreadDemo flucoma/clients/nrt/FluidThreadTestClient.hpp CLASS NRT
 add_client(BufThresh flucoma/clients/nrt/BufThreshClient.hpp CLASS NRTThreadedBufferThreshClient )
 add_client(BufTransientSlice flucoma/clients/rt/TransientSliceClient.hpp CLASS NRTThreadedTransientSliceClient )
 add_client(BufTransients flucoma/clients/rt/TransientClient.hpp CLASS NRTThreadedTransientsClient )
+add_kr_in_client(BufVoiceAllocator flucoma/clients/rt/VoiceAllocatorClient.hpp CLASS NRTThreadedVoiceAllocator )
 add_client(Chroma flucoma/clients/rt/ChromaClient.hpp CLASS RTChromaClient )
 add_client(Gain flucoma/clients/rt/GainClient.hpp CLASS RTGainClient NOINSTALL)
 add_client(HPSS flucoma/clients/rt/HPSSClient.hpp CLASS RTHPSSClient )
@@ -139,6 +140,7 @@ add_client(SpectralShape flucoma/clients/rt/SpectralShapeClient.hpp CLASS RTSpec
 add_kr_in_client(Stats flucoma/clients/rt/RunningStatsClient.hpp CLASS RunningStatsClient )
 add_client(TransientSlice flucoma/clients/rt/TransientSliceClient.hpp CLASS RTTransientSliceClient )
 add_client(Transients flucoma/clients/rt/TransientClient.hpp CLASS RTTransientClient )
+add_kr_in_client(VoiceAllocator flucoma/clients/rt/VoiceAllocatorClient.hpp CLASS VoiceAllocatorClient )
 
 #lib manipulation client group 
 add_client(DataSet flucoma/clients/nrt/DataSetClient.hpp CLASS NRTThreadedDataSetClient GROUP MANIPULATION)
