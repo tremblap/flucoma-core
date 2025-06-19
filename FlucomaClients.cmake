@@ -143,7 +143,6 @@ add_client(TransientSlice flucoma/clients/rt/TransientSliceClient.hpp CLASS RTTr
 add_client(Transients flucoma/clients/rt/TransientClient.hpp CLASS RTTransientClient )
 add_kr_in_client(VoiceAllocator flucoma/clients/rt/VoiceAllocatorClient.hpp CLASS VoiceAllocatorClient )
 
-
 #lib manipulation client group 
 add_client(DataSet flucoma/clients/nrt/DataSetClient.hpp CLASS NRTThreadedDataSetClient GROUP MANIPULATION)
 add_client(DataSetQuery flucoma/clients/nrt/DataSetQueryClient.hpp CLASS NRTThreadedDataSetQueryClient GROUP MANIPULATION)
