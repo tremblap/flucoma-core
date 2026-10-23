@@ -229,6 +229,9 @@ public:
     return OK();
   }
 
+  MessageResult<double> containsId(string id) const
+  { return mAlgorithm.contains(id) ? 1 : 0; }
+
   MessageResult<FluidTensor<rt::string, 1>> kNearest(InputBufferPtr data,
                                                      index nNeighbours) const
   {
@@ -324,6 +327,7 @@ public:
         makeMessage("fromBuffer", &DataSetClient::fromBuffer),
         makeMessage("toBuffer", &DataSetClient::toBuffer),
         makeMessage("getIds", &DataSetClient::getIds),
+        makeMessage("containsId", &DataSetClient::containsId),
         makeMessage("kNearestDist", &DataSetClient::kNearestDist),
         makeMessage("kNearest", &DataSetClient::kNearest));
   }
