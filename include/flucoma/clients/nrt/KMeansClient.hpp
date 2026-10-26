@@ -49,6 +49,8 @@ public:
   using ParamDescType = decltype(KMeansParams);
 
   using ParamSetViewType = ParameterSetView<ParamDescType>;
+  using ParamValues = typename ParamSetViewType::ValueTuple;
+
   std::reference_wrapper<ParamSetViewType> mParams;
 
   void setParams(ParamSetViewType& p) { mParams = p; }
@@ -204,16 +206,18 @@ public:
     return OK();
   }
 
-  MessageResult<void> setMeans(InputDataSetClientRef srcClient)
+  MessageResult<ParamValues> setMeans(InputDataSetClientRef srcClient)
   {
     auto srcPtr = srcClient.get().lock();
     if (!srcPtr) return Error(NoDataSet);
     auto dataSet = srcPtr->getDataSet();
     if (dataSet.size() == 0) return Error(EmptyDataSet);
+    auto numClusters = dataSet.size();
     mAlgorithm.setMeans(dataSet.getData());
-    return OK();
+    ParamValues newParams = mParams.get().toTuple();
+    std::get<kNumClusters>(newParams) = numClusters;
+    return newParams;
   }
-
 
   MessageResult<void> transformPoint(InputBufferPtr in, BufferPtr out) const
   {
