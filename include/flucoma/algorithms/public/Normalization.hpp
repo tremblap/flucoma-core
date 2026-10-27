@@ -35,8 +35,8 @@ public:
     mRange = mMax - mMin;
     handleZerosInScale(mRange);
     ArrayXXd input = asEigen<Array>(in);
-    mDataMin = input.colwise().minCoeff();
-    mDataMax = input.colwise().maxCoeff();
+    mDataMin.setConstant(input.cols(), input.minCoeff());
+    mDataMax.setConstant(input.cols(), input.maxCoeff());
     mDataRange = mDataMax - mDataMin;
     handleZerosInScale(mDataRange);
     mInitialized = true;
