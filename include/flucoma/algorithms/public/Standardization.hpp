@@ -26,7 +26,7 @@ public:
   using ArrayXd = Eigen::ArrayXd;
   using ArrayXXd = Eigen::ArrayXXd;
 
-  void init(RealMatrixView in)
+  void init(RealMatrixView in, index dsWide)
   {
     using namespace Eigen;
     using namespace _impl;
