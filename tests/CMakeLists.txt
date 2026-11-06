@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.11)
+cmake_minimum_required (VERSION 3.28)
 
 ###### Utils 
 add_subdirectory(test_signals)
@@ -7,27 +7,7 @@ add_subdirectory(test_signals)
 
 # a handler to catch sigabrt for us on death tests
 add_library(AbortHandler OBJECT AbortHandler.cpp)
-
-# function (add_assert_fail_test testname sourcedir)
-#   try_compile(
-#     testname_BUILT "${CMAKE_BINARY_DIR}/tmp/${testname}" "${sourcedir}" FluidTensorDeathTests
-#     OUTPUT_VARIABLE whathappened
-#   )
-#   message(WARNING ${whathappened})
-# 
-#   if(NOT testname_BUILT)
-#     message(ERROR "Could not build assertion death tests in ${sourcedir}")
-#   endif()
-# 
-#   add_custom_command(${testname}_BUILD)
-#   add_executable(${testname} "${sourcefile}")
-#   target_link_libraries(${testname} PRIVATE FLUID_DECOMPOSITION)
-# 
-#   add_test(NAME ${testname}
-#     COMMAND ${testname} 
-#   )
-#   set_tests_properties(${testname} PROPERTIES WILL_FAIL true)
-# endfunction()
+target_compile_features(AbortHandler PUBLIC cxx_std_17)
 
 ###### compilation tests 
 function (add_compile_tests test_name_stub sourcefile) 
@@ -70,41 +50,41 @@ endfunction()
 
 Include(FetchContent)
 
+if(APPLE) # Needed for C++17 < macOS 10.12. Made conditional b/c gives a warning with GCC on Linux
+  set(CATCH_CONFIG_NO_CPP17_UNCAUGHT_EXCEPTIONS ON CACHE BOOL "" FORCE)
+endif()
 # get catch 
 FetchContent_Declare(
   Catch2
   GIT_SHALLOW    TRUE
   GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-  GIT_TAG        v2.x
+  GIT_TAG        devel
+  EXCLUDE_FROM_ALL
 )
 FetchContent_MakeAvailable(Catch2)
 list(APPEND CMAKE_MODULE_PATH ${Catch2_SOURCE_DIR}/contrib)
+list(APPEND CMAKE_MODULE_PATH ${Catch2_SOURCE_DIR}/extras)
 
 # get approvaltests.cpp 
 FetchContent_Declare( 
   ApprovalCPP 
   GIT_SHALLOW    TRUE
   GIT_REPOSITORY https://github.com/approvals/ApprovalTests.cpp.git
-  GIT_TAG        master
+  GIT_TAG        v.10.13.0
+  EXCLUDE_FROM_ALL
 )
 FetchContent_MakeAvailable(ApprovalCPP)
 
 add_library(TestUtils INTERFACE)
 target_include_directories(TestUtils  INTERFACE include)
 target_link_libraries(TestUtils INTERFACE
-  Catch2::Catch2
+  Catch2::Catch2WithMain
   FLUID_DECOMPOSITION
   ApprovalTests::ApprovalTests
 )
 target_compile_definitions(TestUtils INTERFACE 
   APPROVAL_TESTS_HIDE_DEPRECATED_CODE=1
 )
-
-if(APPLE)
-  target_compile_definitions(TestUtils INTERFACE   
-    CATCH_CONFIG_NO_CPP17_UNCAUGHT_EXCEPTIONS
-  )
-endif()
 
 function(add_test_executable target_name source_file)
   add_executable(${target_name} ${source_file})
@@ -134,12 +114,26 @@ add_test_executable(TestEnvelopeGate algorithms/public/TestEnvelopeGate.cpp)
 
 add_test_executable(TestTransientSlice algorithms/public/TestTransientSlice.cpp)
 
+add_test_executable(TestMLP algorithms/public/TestMLP.cpp)
+add_test_executable(TestKMeans algorithms/public/TestKMeans.cpp)
+add_test_executable(TestSKMeans algorithms/public/TestSKMeans.cpp)
+add_test_executable(TestNMFCross algorithms/public/TestNMFCross.cpp)
+add_test_executable(TestGriffinLim algorithms/public/TestGriffinLim.cpp)
+add_test_executable(TestNMF algorithms/public/TestNMF.cpp)
+add_test_executable(TestUMAP algorithms/public/TestUMAP.cpp)
+
+add_test_executable(TestDataSampler data/detail/TestDataSampler.cpp)
+add_test_executable(TestSGD algorithms/public/TestSGD.cpp)
 
 target_link_libraries(TestNoveltySeg PRIVATE TestSignals)
 target_link_libraries(TestOnsetSeg PRIVATE TestSignals)
 target_link_libraries(TestEnvelopeSeg PRIVATE TestSignals)
 target_link_libraries(TestEnvelopeGate PRIVATE TestSignals)
 target_link_libraries(TestTransientSlice PRIVATE TestSignals)
+
+add_test_executable(TestEigenRandom algorithms/util/TestEigenRandom.cpp)
+add_test_executable(TestNNDSVD algorithms/public/TestNNDSVD.cpp)
+add_test_executable(TestRTPGHI algorithms/util/TestRTPGHI.cpp)
 
 include(CTest)
 include(Catch)
@@ -164,5 +158,19 @@ catch_discover_tests(TestTransientSlice WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
 catch_discover_tests(TestFluidSource WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
 catch_discover_tests(TestFluidSink WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
 catch_discover_tests(TestBufferedProcess WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
+
+catch_discover_tests(TestMLP WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
+catch_discover_tests(TestKMeans WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+catch_discover_tests(TestSKMeans) 
+catch_discover_tests(TestEigenRandom WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+catch_discover_tests(TestNMFCross WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+catch_discover_tests(TestGriffinLim WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+catch_discover_tests(TestNNDSVD WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+catch_discover_tests(TestNMF WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+catch_discover_tests(TestRTPGHI WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
+catch_discover_tests(TestUMAP WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
+
+catch_discover_tests(TestDataSampler)
+catch_discover_tests(TestSGD)
 
 add_compile_tests("FluidTensor Compilation Tests" data/compile_tests/TestFluidTensor_Compile.cpp) 
